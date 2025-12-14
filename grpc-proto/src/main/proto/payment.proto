@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package com.eventticket.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.eventticket.grpc.payment";
+option java_outer_classname = "PaymentProto";
+
+// Payment Service gRPC Definitions
+
+message CreatePaymentRequest {
+  string user_id = 1;
+  string event_id = 2;
+  repeated string seat_ids = 3;
+  double amount = 4;
+}
+
+message CreatePaymentResponse {
+  bool success = 1;
+  string payment_id = 2;
+  string status = 3; // PENDING, CONFIRMED, FAILED
+  string message = 4;
+}
+
+message ConfirmPaymentRequest {
+  string payment_id = 1;
+  string transaction_id = 2; // From payment gateway
+}
+
+message ConfirmPaymentResponse {
+  bool success = 1;
+  string payment_id = 2;
+  string status = 3;
+  string message = 4;
+}
+
+message GetPaymentStatusRequest {
+  string payment_id = 1;
+}
+
+message GetPaymentStatusResponse {
+  string payment_id = 1;
+  string status = 2;
+  string user_id = 3;
+  double amount = 4;
+  int64 created_at = 5;
+}
+
+service PaymentService {
+  rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
+  rpc ConfirmPayment(ConfirmPaymentRequest) returns (ConfirmPaymentResponse);
+  rpc GetPaymentStatus(GetPaymentStatusRequest) returns (GetPaymentStatusResponse);
+}

@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: notification-analytics-service
+  kafka:
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: notification-group
+      auto-offset-reset: earliest
+  datasource:
+    url: jdbc:postgresql://postgres-notification-db:5432/notification_db
+    username: notificationuser
+    password: notificationpass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+server:
+  port: 8005
+
+logging:
+  level:
+    root: INFO
+    com.eventticket: DEBUG

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống bán vé sự kiện</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <h1 class="logo">🎫 Event Ticketing</h1>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showPage('home')">Trang chủ</a></li>
+                <li><a href="#" onclick="showPage('events')">Sự kiện</a></li>
+                <li><a href="#" onclick="showPage('bookings')">Đơn đặt vé</a></li>
+                <li><a href="#" onclick="showPage('reports')">Báo cáo</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Home Page -->
+        <div id="home" class="page">
+            <h2>Chào mừng đến Event Ticketing System</h2>
+            <p>Hệ thống bán vé trực tuyến cho các sự kiện</p>
+            <div class="stats">
+                <div class="stat-box">
+                    <h3>Sự kiện</h3>
+                    <p id="eventCount">0</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Vé bán</h3>
+                    <p id="ticketCount">0</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Doanh thu</h3>
+                    <p id="revenueCount">0 VNĐ</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events Page -->
+        <div id="events" class="page" style="display:none;">
+            <h2>Danh sách sự kiện</h2>
+            <div id="eventsList" class="events-grid">
+                <!-- Events sẽ được load ở đây -->
+            </div>
+        </div>
+
+        <!-- Book Ticket Page -->
+        <div id="bookings" class="page" style="display:none;">
+            <h2>Đặt vé</h2>
+            <form id="bookingForm" class="form">
+                <div class="form-group">
+                    <label>Chọn sự kiện:</label>
+                    <select id="eventSelect" required>
+                        <option value="">-- Chọn sự kiện --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Số lượng vé:</label>
+                    <input type="number" id="seatCount" min="1" value="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Tên khách hàng:</label>
+                    <input type="text" id="userName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="userEmail" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Số điện thoại:</label>
+                    <input type="tel" id="userPhone" required>
+                </div>
+
+                <button type="button" onclick="bookTicket()" class="btn btn-primary">Đặt vé</button>
+            </form>
+
+            <div id="bookingMessage" class="message" style="display:none;"></div>
+        </div>
+
+        <!-- Bookings List Page -->
+        <div id="bookings-list" class="page" style="display:none;">
+            <h2>Lịch sử đặt vé</h2>
+            <div id="bookingsList" class="table-container">
+                <!-- Bookings sẽ được load ở đây -->
+            </div>
+        </div>
+
+        <!-- Reports Page -->
+        <div id="reports" class="page" style="display:none;">
+            <h2>Báo cáo</h2>
+            <div class="report-section">
+                <h3>Thống kê bán hàng</h3>
+                <div id="reportsList">
+                    <!-- Reports sẽ được load ở đây -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Event Ticketing System. Tất cả quyền được bảo lưu.</p>
+    </footer>
+
+    <script src="api.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

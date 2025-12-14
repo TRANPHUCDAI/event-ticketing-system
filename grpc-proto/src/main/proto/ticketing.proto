@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package com.eventticket.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.eventticket.grpc.ticketing";
+option java_outer_classname = "TicketingProto";
+
+// Ticketing Service gRPC Definitions
+
+message CreateTicketRequest {
+  string payment_id = 1;
+  string user_id = 2;
+  string event_id = 3;
+  repeated string seat_ids = 4;
+}
+
+message TicketInfo {
+  string ticket_id = 1;
+  string user_id = 2;
+  string seat_id = 3;
+  string qr_code = 4;
+  string status = 5;
+  int64 created_at = 6;
+}
+
+message CreateTicketResponse {
+  bool success = 1;
+  repeated TicketInfo tickets = 2;
+  string message = 3;
+}
+
+message GetTicketRequest {
+  string ticket_id = 1;
+}
+
+message GetTicketResponse {
+  string ticket_id = 1;
+  string user_id = 2;
+  string event_id = 3;
+  string seat_id = 4;
+  string qr_code = 5;
+  string status = 6;
+  int64 created_at = 7;
+}
+
+message CheckInRequest {
+  string ticket_id = 1;
+  string qr_code = 2;
+}
+
+message CheckInResponse {
+  bool success = 1;
+  string ticket_id = 2;
+  string event_id = 3;
+  string seat_id = 4;
+  string message = 5;
+}
+
+service TicketingService {
+  rpc CreateTicket(CreateTicketRequest) returns (CreateTicketResponse);
+  rpc GetTicket(GetTicketRequest) returns (GetTicketResponse);
+  rpc CheckIn(CheckInRequest) returns (CheckInResponse);
+}

@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package com.eventticket.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.eventticket.grpc.seat";
+option java_outer_classname = "SeatAllocationProto";
+
+// Seat Allocation Service gRPC Definitions
+
+message HoldSeatRequest {
+  string event_id = 1;
+  string seat_id = 2;
+  string user_id = 3;
+  int32 hold_duration_seconds = 4; // TTL for the hold
+}
+
+message HoldSeatResponse {
+  bool success = 1;
+  string message = 2;
+  string hold_id = 3;
+  int64 held_until = 4; // Timestamp when hold expires
+}
+
+message ReleaseSeatRequest {
+  string event_id = 1;
+  string seat_id = 2;
+  string user_id = 3;
+}
+
+message ReleaseSeatResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ConfirmSeatRequest {
+  string event_id = 1;
+  string seat_id = 2;
+  string user_id = 3;
+  string hold_id = 4;
+}
+
+message ConfirmSeatResponse {
+  bool success = 1;
+  string message = 2;
+  string seat_status = 3; // SOLD, AVAILABLE, BLOCKED
+}
+
+message GetSeatStatusRequest {
+  string event_id = 1;
+  string seat_id = 2;
+}
+
+message GetSeatStatusResponse {
+  string seat_id = 1;
+  string status = 2;
+  string held_by = 3;
+  int64 held_until = 4;
+}
+
+message GetEventSeatsRequest {
+  string event_id = 1;
+}
+
+message SeatInfo {
+  string seat_id = 1;
+  string row = 2;
+  int32 col = 3;
+  string status = 4;
+  string held_by = 5;
+  int64 held_until = 6;
+}
+
+message GetEventSeatsResponse {
+  string event_id = 1;
+  repeated SeatInfo seats = 2;
+  int32 available_seats = 3;
+  int32 held_seats = 4;
+  int32 sold_seats = 5;
+}
+
+service SeatAllocationService {
+  rpc HoldSeat(HoldSeatRequest) returns (HoldSeatResponse);
+  rpc ReleaseSeat(ReleaseSeatRequest) returns (ReleaseSeatResponse);
+  rpc ConfirmSeat(ConfirmSeatRequest) returns (ConfirmSeatResponse);
+  rpc GetSeatStatus(GetSeatStatusRequest) returns (GetSeatStatusResponse);
+  rpc GetEventSeats(GetEventSeatsRequest) returns (GetEventSeatsResponse);
+}

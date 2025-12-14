@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: ticketing-service
+  datasource:
+    url: jdbc:postgresql://localhost:5435/ticketing_db
+    username: ticketing_user
+    password: ticketing_password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: ticketing-service
+      auto-offset-reset: earliest
+      max-poll-records: 10
+    listener:
+      poll-timeout: 3000
+      type: batch
+      ack-mode: manual
+
+server:
+  port: 8004
+
+logging:
+  level:
+    "[org.springframework.web]": INFO
+    "[org.hibernate]": WARN

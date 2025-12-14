@@ -1,0 +1,143 @@
+version: '3.8'
+
+services:
+  # PostgreSQL cho Event Booking Service (Event + Seat Allocation)
+  postgres-event-db:
+    image: postgres:15-alpine
+    container_name: postgres-event-db
+    environment:
+      POSTGRES_DB: event_db
+      POSTGRES_USER: eventuser
+      POSTGRES_PASSWORD: eventpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_event_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eventuser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL cho Payment Service
+  postgres-payment-db:
+    image: postgres:15-alpine
+    container_name: postgres-payment-db
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: paymentuser
+      POSTGRES_PASSWORD: paymentpass
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_payment_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paymentuser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL cho Ticketing Service
+  postgres-ticketing-db:
+    image: postgres:15-alpine
+    container_name: postgres-ticketing-db
+    environment:
+      POSTGRES_DB: ticketing_db
+      POSTGRES_USER: ticketinguser
+      POSTGRES_PASSWORD: ticketingpass
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_ticketing_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ticketinguser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL cho Notification & Analytics Service
+  postgres-notification-db:
+    image: postgres:15-alpine
+    container_name: postgres-notification-db
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: notificationuser
+      POSTGRES_PASSWORD: notificationpass
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_notification_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notificationuser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis cho Seat Locking
+  redis-cache:
+    image: redis:7-alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+
+  # pgAdmin - GUI for PostgreSQL
+  pgadmin:
+    image: dpage/pgadmin4:7
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres-event-db
+      - postgres-payment-db
+      - postgres-ticketing-db
+      - postgres-notification-db
+
+volumes:
+  postgres_event_data:
+  postgres_payment_data:
+  postgres_ticketing_data:
+  postgres_notification_data:
+  redis_data:
+
+networks:
+  default:
+    name: event-ticketing-network
+
