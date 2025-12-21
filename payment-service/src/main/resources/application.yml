@@ -2,18 +2,18 @@ spring:
   application:
     name: payment-service
   datasource:
-    url: jdbc:postgresql://localhost:5434/payment_db
-    username: payment_user
-    password: payment_password
+    url: jdbc:postgresql://localhost:5433/payment_db
+    username: paymentuser
+    password: paymentpass
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:29092
     producer:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 

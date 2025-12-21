@@ -5,6 +5,8 @@ spring:
     gateway:
       default-filters:
         - AddRequestHeader=X-Request-Id, ${random.uuid}
+
+server:
   port: 8000
 
 logging:

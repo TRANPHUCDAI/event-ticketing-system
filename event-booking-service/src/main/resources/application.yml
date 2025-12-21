@@ -9,13 +9,13 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   datasource:
-    url: jdbc:postgresql://postgres-event-db:5432/event_db
+    url: jdbc:postgresql://localhost:5432/event_db
     username: eventuser
     password: eventpass
     driver-class-name: org.postgresql.Driver
   data:
     redis:
-      host: redis-cache
+      host: localhost
       port: 6379
       timeout: 3000
       jedis:
@@ -23,9 +23,20 @@ spring:
           max-active: 8
           max-idle: 8
           min-idle: 0
+  main:
+    allow-bean-definition-overriding: true
 
 server:
   port: 8001
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
 
 logging:
   level:

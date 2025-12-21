@@ -2,12 +2,12 @@ spring:
   application:
     name: notification-analytics-service
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: localhost:29092
     consumer:
       group-id: notification-group
       auto-offset-reset: earliest
   datasource:
-    url: jdbc:postgresql://postgres-notification-db:5432/notification_db
+    url: jdbc:postgresql://localhost:5435/notification_db
     username: notificationuser
     password: notificationpass
     driver-class-name: org.postgresql.Driver
