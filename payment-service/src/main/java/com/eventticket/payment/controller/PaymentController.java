@@ -18,10 +18,10 @@ public class PaymentController {
 
      @PostMapping
      public ResponseEntity<ApiResponse<String>> createPayment(
-               @RequestParam("userId") String userId,
-               @RequestParam("eventId") String eventId,
-               @RequestParam("amount") double amount,
-               @RequestParam("paymentMethod") String paymentMethod) {
+               @RequestParam String userId,
+               @RequestParam String eventId,
+               @RequestParam double amount,
+               @RequestParam String paymentMethod) {
 
           String paymentId = paymentService.createPayment(userId, eventId, amount, paymentMethod);
           return ResponseEntity
@@ -31,15 +31,15 @@ public class PaymentController {
 
      @PostMapping("/{paymentId}/confirm")
      public ResponseEntity<ApiResponse<Void>> confirmPayment(
-               @PathVariable("paymentId") String paymentId,
-               @RequestParam("transactionId") String transactionId) {
+               @PathVariable String paymentId,
+               @RequestParam String transactionId) {
 
           paymentService.confirmPayment(paymentId, transactionId);
           return ResponseEntity.ok(ApiResponse.ok(null, "Payment confirmed successfully"));
      }
 
      @GetMapping("/{paymentId}")
-     public ResponseEntity<ApiResponse<PaymentTransaction>> getPaymentStatus(@PathVariable("paymentId") String paymentId) {
+     public ResponseEntity<ApiResponse<PaymentTransaction>> getPaymentStatus(@PathVariable String paymentId) {
           PaymentTransaction payment = paymentService.getPaymentStatus(paymentId);
           return ResponseEntity.ok(ApiResponse.ok(payment));
      }

@@ -116,9 +116,9 @@ public class TicketingService {
           long timestamp = System.currentTimeMillis();
           return String.format("TICKET:%s:%s:%s:%s:%d",
                     UUID.randomUUID().toString().substring(0, 8),
-                    eventId.length() > 8 ? eventId.substring(0, 8) : eventId,
-                    seatId,
-                    userId.length() > 8 ? userId.substring(0, 8) : userId,
+                    eventId.substring(0, 8),
+                    seatId.substring(0, 8),
+                    userId.substring(0, 8),
                     timestamp);
      }
 
