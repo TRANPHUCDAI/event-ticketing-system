@@ -5,6 +5,10 @@ spring:
     gateway:
       default-filters:
         - AddRequestHeader=X-Request-Id, ${random.uuid}
+  security:
+    user:
+      name: admin
+      password: admin
 
 server:
   port: 8000
@@ -12,3 +16,4 @@ server:
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
+    org.springframework.security: DEBUG

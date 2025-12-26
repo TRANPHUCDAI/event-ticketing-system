@@ -16,16 +16,22 @@ async function apiCall(endpoint, method = 'GET', data = null) {
     }
 
     try {
+        console.log(`🔵 API Call: ${method} ${API_BASE_URL}${endpoint}`, data);
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
         
+        console.log(`📡 Response status: ${response.status}`);
+        
         if (!response.ok) {
-            throw new Error(`API Error: ${response.statusText}`);
+            const errorText = await response.text();
+            console.error(`❌ API Error: ${response.status} - ${errorText}`);
+            throw new Error(`API Error ${response.status}: ${errorText || response.statusText}`);
         }
 
         const result = await response.json();
+        console.log(`✅ API Response:`, result);
         return result;
     } catch (error) {
-        console.error('API Call Error:', error);
+        console.error('❌ API Call Error:', error);
         throw error;
     }
 }
@@ -48,48 +54,63 @@ async function createEvent(eventData) {
 
 // ============= Seats API =============
 
-async function bookSeats(bookingData) {
-    try {
-        const response = await apiCall('/seats/reserve', 'POST', bookingData);
-        return response;
-    } catch (error) {
-        console.error('Error booking seats:', error);
-        throw error;
-    }
+async function holdSeat(eventId, seatId, userId) {
+    const params = new URLSearchParams({ eventId, seatId, userId });
+    return apiCall(`/seats/hold?${params}`, 'POST');
 }
 
-async function getAvailableSeats(eventId) {
-    try {
-        const response = await apiCall(`/seats/available/${eventId}`);
-        return response.data || 0;
-    } catch (error) {
-        console.error('Error fetching available seats:', error);
-        return 0;
-    }
+async function releaseSeat(eventId, seatId, userId) {
+    const params = new URLSearchParams({ eventId, seatId, userId });
+    return apiCall(`/seats/release?${params}`, 'POST');
+}
+
+async function confirmSeat(eventId, seatId, userId) {
+    const params = new URLSearchParams({ eventId, seatId, userId });
+    return apiCall(`/seats/confirm?${params}`, 'POST');
+}
+
+async function getSeatStatus(eventId, seatId) {
+    const params = new URLSearchParams({ eventId, seatId });
+    return apiCall(`/seats/status?${params}`);
 }
 
 // ============= Payments API =============
 
-async function processPayment(paymentData) {
-    try {
-        const response = await apiCall('/payments', 'POST', paymentData);
-        return response;
-    } catch (error) {
-        console.error('Error processing payment:', error);
-        throw error;
-    }
+async function createPayment(userId, eventId, amount, paymentMethod) {
+    const params = new URLSearchParams({ userId, eventId, amount, paymentMethod });
+    return apiCall(`/payments?${params}`, 'POST');
 }
 
-// ============= Bookings API =============
+async function confirmPayment(paymentId, transactionId) {
+    const params = new URLSearchParams({ transactionId });
+    return apiCall(`/payments/${paymentId}/confirm?${params}`, 'POST');
+}
 
-async function getUserBookings(userId) {
-    try {
-        const response = await apiCall(`/tickets/user/${userId}`);
-        return response.data || [];
-    } catch (error) {
-        console.error('Error fetching bookings:', error);
-        return [];
-    }
+async function getPaymentStatus(paymentId) {
+    return apiCall(`/payments/${paymentId}`);
+}
+
+// ============= Tickets API =============
+
+async function createTicket(eventId, seatId, userId, paymentId) {
+    const params = new URLSearchParams({ eventId, seatId, userId, paymentId });
+    return apiCall(`/tickets?${params}`, 'POST');
+}
+
+async function getTicket(ticketId) {
+    return apiCall(`/tickets/${ticketId}`);
+}
+
+async function getUserTickets(userId) {
+    return apiCall(`/tickets/user/${userId}`);
+}
+
+async function getEventTickets(eventId) {
+    return apiCall(`/tickets/event/${eventId}`);
+}
+
+async function checkInTicket(ticketId) {
+    return apiCall(`/tickets/${ticketId}/checkin`, 'POST');
 }
 
 // ============= Reports API =============

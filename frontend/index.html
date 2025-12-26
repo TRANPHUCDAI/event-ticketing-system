@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ thống bán vé sự kiện</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2.0">
 </head>
 <body>
     <!-- Navigation -->
@@ -44,7 +44,43 @@
 
         <!-- Events Page -->
         <div id="events" class="page" style="display:none;">
-            <h2>Danh sách sự kiện</h2>
+            <div class="page-header">
+                <h2>Danh sách sự kiện</h2>
+                <button onclick="showCreateEventForm()" class="btn btn-primary">➕ Tạo sự kiện mới</button>
+            </div>
+            
+            <!-- Create Event Form -->
+            <div id="createEventForm" class="form-container" style="display:none;">
+                <h3>Tạo sự kiện mới</h3>
+                <form id="eventForm" class="form">
+                    <div class="form-group">
+                        <label>Tên sự kiện:</label>
+                        <input type="text" id="eventName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Địa điểm:</label>
+                        <input type="text" id="venueName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mô tả:</label>
+                        <textarea id="eventDescription" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Tổng số ghế:</label>
+                        <input type="number" id="totalSeats" min="1" value="1000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Giá vé (VNĐ):</label>
+                        <input type="number" id="ticketPrice" min="0" value="500000" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" onclick="createNewEvent()" class="btn btn-success">✓ Tạo</button>
+                        <button type="button" onclick="hideCreateEventForm()" class="btn btn-secondary">✕ Hủy</button>
+                    </div>
+                </form>
+                <div id="createEventMessage" class="message" style="display:none;"></div>
+            </div>
+
             <div id="eventsList" class="events-grid">
                 <!-- Events sẽ được load ở đây -->
             </div>
@@ -52,39 +88,60 @@
 
         <!-- Book Ticket Page -->
         <div id="bookings" class="page" style="display:none;">
-            <h2>Đặt vé</h2>
+            <h2>Đặt vé (Quy trình đầy đủ)</h2>
+            <div class="booking-steps">
+                <div class="step active">1. Chọn sự kiện</div>
+                <div class="step">2. Giữ chỗ</div>
+                <div class="step">3. Thanh toán</div>
+                <div class="step">4. Nhận vé</div>
+            </div>
+
             <form id="bookingForm" class="form">
                 <div class="form-group">
                     <label>Chọn sự kiện:</label>
-                    <select id="eventSelect" required>
+                    <select id="eventSelect" required onchange="updateSelectedEvent()">
                         <option value="">-- Chọn sự kiện --</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Số lượng vé:</label>
-                    <input type="number" id="seatCount" min="1" value="1" required>
+                    <label>Mã ghế (ví dụ: A1, A2, B5):</label>
+                    <input type="text" id="seatId" placeholder="Nhập mã ghế" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Tên khách hàng:</label>
-                    <input type="text" id="userName" required>
+                    <label>User ID:</label>
+                    <input type="text" id="userId" value="user123" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Email:</label>
-                    <input type="email" id="userEmail" required>
+                    <label>Số tiền thanh toán (VNĐ):</label>
+                    <input type="number" id="paymentAmount" value="500000" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Số điện thoại:</label>
-                    <input type="tel" id="userPhone" required>
+                    <label>Phương thức thanh toán:</label>
+                    <select id="paymentMethod" required>
+                        <option value="CREDIT_CARD">Thẻ tín dụng</option>
+                        <option value="MOMO">MoMo</option>
+                        <option value="VNPAY">VNPay</option>
+                        <option value="CASH">Tiền mặt</option>
+                    </select>
                 </div>
 
-                <button type="button" onclick="bookTicket()" class="btn btn-primary">Đặt vé</button>
+                <div class="form-actions">
+                    <button type="button" onclick="fullBookingFlow()" class="btn btn-primary">🎫 Đặt vé (Quy trình đầy đủ)</button>
+                </div>
             </form>
 
             <div id="bookingMessage" class="message" style="display:none;"></div>
+            
+            <!-- My Tickets Section -->
+            <div class="my-tickets-section">
+                <h3>Vé của tôi</h3>
+                <button onclick="loadMyTickets()" class="btn btn-secondary">🔄 Tải vé</button>
+                <div id="myTicketsList"></div>
+            </div>
         </div>
 
         <!-- Bookings List Page -->
@@ -97,12 +154,126 @@
 
         <!-- Reports Page -->
         <div id="reports" class="page" style="display:none;">
-            <h2>Báo cáo</h2>
+            <h2>📊 Báo cáo & Thống kê</h2>
+            
             <div class="report-section">
-                <h3>Thống kê bán hàng</h3>
-                <div id="reportsList">
-                    <!-- Reports sẽ được load ở đây -->
+                <h3>Tổng quan hệ thống</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🎫</div>
+                        <div class="stat-value" id="reportTotalEvents">0</div>
+                        <div class="stat-label">Sự kiện</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🎟️</div>
+                        <div class="stat-value" id="reportTotalTickets">0</div>
+                        <div class="stat-label">Vé đã bán</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-value" id="reportTotalRevenue">0 VNĐ</div>
+                        <div class="stat-label">Tổng doanh thu</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-value" id="reportTotalUsers">0</div>
+                        <div class="stat-label">Khách hàng</div>
+                    </div>
                 </div>
+            </div>
+
+            <div class="report-section">
+                <h3>Chi tiết theo sự kiện</h3>
+                <button onclick="loadReports()" class="btn btn-primary">🔄 Tải báo cáo</button>
+                <div id="eventsReport" class="table-container">
+                    <!-- Event reports -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal" style="display:none;">
+        <div class="modal-content payment-modal">
+            <div class="modal-header">
+                <h3>💳 Thanh toán an toàn</h3>
+                <span class="close" onclick="closePaymentModal()">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Payment Summary Card -->
+                <div class="payment-summary-card">
+                    <div class="summary-header">
+                        <div class="summary-icon">🎫</div>
+                        <div class="summary-info">
+                            <div class="summary-title">Chi tiết đặt vé</div>
+                            <div class="summary-subtitle">Vui lòng kiểm tra thông tin</div>
+                        </div>
+                    </div>
+                    <div class="summary-details">
+                        <div class="detail-row">
+                            <span class="detail-label">📍 Sự kiện</span>
+                            <span class="detail-value" id="paymentEventName">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">💺 Ghế số</span>
+                            <span class="detail-value" id="paymentSeatId">-</span>
+                        </div>
+                        <div class="detail-row total-row">
+                            <span class="detail-label">💰 Tổng cộng</span>
+                            <span class="detail-value total-amount" id="paymentTotalAmount">0 VNĐ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Form -->
+                <form id="paymentDetailsForm" class="payment-form">
+                    <div class="form-section">
+                        <label class="form-label">
+                            <span class="label-icon">👤</span>
+                            <span>Tên chủ thẻ</span>
+                        </label>
+                        <input type="text" id="cardHolderName" class="form-input" placeholder="VD: NGUYEN VAN A" required>
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label">
+                            <span class="label-icon">💳</span>
+                            <span>Số thẻ</span>
+                        </label>
+                        <input type="text" id="cardNumber" class="form-input card-number" placeholder="1234 5678 9012 3456" maxlength="19" required>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="form-section">
+                            <label class="form-label">
+                                <span class="label-icon">📅</span>
+                                <span>Ngày hết hạn</span>
+                            </label>
+                            <input type="text" id="expiryDate" class="form-input" placeholder="MM/YY" maxlength="5" required>
+                        </div>
+                        <div class="form-section">
+                            <label class="form-label">
+                                <span class="label-icon">🔒</span>
+                                <span>CVV</span>
+                            </label>
+                            <input type="text" id="cvv" class="form-input cvv-input" placeholder="123" maxlength="3" required>
+                        </div>
+                    </div>
+
+                    <div class="security-note">
+                        🔐 Thông tin thanh toán được mã hóa và bảo mật
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" onclick="closePaymentModal()" class="btn-modal btn-cancel">
+                            ✕ Hủy
+                        </button>
+                        <button type="button" onclick="submitPayment()" class="btn-modal btn-pay">
+                            💳 Xác nhận thanh toán
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

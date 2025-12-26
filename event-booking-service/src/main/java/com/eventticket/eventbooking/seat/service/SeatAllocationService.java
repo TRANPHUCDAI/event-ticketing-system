@@ -39,36 +39,43 @@ public class SeatAllocationService {
 
           String lockKey = SEAT_LOCK_PREFIX + eventId + ":" + seatId;
 
-          // Try to acquire lock with Redis NX (only set if not exists)
-          Boolean lockAcquired = redisTemplate.opsForValue()
-                    .setIfAbsent(lockKey, userId, Duration.ofMinutes(HOLD_DURATION_MINUTES));
+          try {
+               // Try to acquire lock with Redis NX (only set if not exists)
+               Boolean lockAcquired = redisTemplate.opsForValue()
+                         .setIfAbsent(lockKey, userId, Duration.ofMinutes(HOLD_DURATION_MINUTES));
 
-          if (Boolean.FALSE.equals(lockAcquired)) {
-               String currentHolder = redisTemplate.opsForValue().get(lockKey);
-               logger.warn("Seat already held by: {}", currentHolder);
-               throw new SeatAlreadyHeldException(seatId);
+               if (Boolean.FALSE.equals(lockAcquired)) {
+                    String currentHolder = redisTemplate.opsForValue().get(lockKey);
+                    logger.warn("Seat already held by: {}", currentHolder);
+                    throw new SeatAlreadyHeldException(seatId);
+               }
+
+               // Save reservation to database
+               LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(HOLD_DURATION_MINUTES);
+               SeatReservation reservation = SeatReservation.builder()
+                         .eventId(eventId)
+                         .seatId(seatId)
+                         .userId(userId)
+                         .status("HELD")
+                         .expiresAt(expiresAt)
+                         .build();
+
+               SeatReservation saved = reservationRepository.save(reservation);
+               logger.info("Seat held successfully: reservationId={}", saved.getId());
+
+               return SeatDto.builder()
+                         .id(seatId)
+                         .eventId(eventId)
+                         .status("BLOCKED")
+                         .heldBy(userId)
+                         .heldUntil(expiresAt.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli())
+                         .build();
+          } catch (SeatAlreadyHeldException e) {
+               throw e;
+          } catch (Exception e) {
+               logger.error("Error holding seat: {}", e.getMessage(), e);
+               throw new RuntimeException("Failed to hold seat: " + e.getMessage(), e);
           }
-
-          // Save reservation to database
-          LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(HOLD_DURATION_MINUTES);
-          SeatReservation reservation = SeatReservation.builder()
-                    .eventId(eventId)
-                    .seatId(seatId)
-                    .userId(userId)
-                    .status("HELD")
-                    .expiresAt(expiresAt)
-                    .build();
-
-          SeatReservation saved = reservationRepository.save(reservation);
-          logger.info("Seat held successfully: reservationId={}", saved.getId());
-
-          return SeatDto.builder()
-                    .id(seatId)
-                    .eventId(eventId)
-                    .status("BLOCKED")
-                    .heldBy(userId)
-                    .heldUntil(expiresAt.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli())
-                    .build();
      }
 
      /**
